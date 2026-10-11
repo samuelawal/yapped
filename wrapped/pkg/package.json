@@ -1,0 +1,15 @@
+{
+  "name": "wrapped",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "wrapped_bg.wasm",
+    "wrapped.js",
+    "wrapped.d.ts"
+  ],
+  "main": "wrapped.js",
+  "types": "wrapped.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

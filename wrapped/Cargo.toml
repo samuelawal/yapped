@@ -1,0 +1,17 @@
+[package]
+name = "wrapped"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+# cdylib = the .wasm file for the browser
+# rlib = a normal Rust library, so main.rs and tests can use it
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# Only the date parts of chrono. Its default "clock" feature reads the
+# system time zone, which doesn't exist in the browser.
+chrono = { version = "0.4.45", default-features = false, features = ["std"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+wasm-bindgen = "0.2"

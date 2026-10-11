@@ -1,0 +1,15 @@
+# Rust build output
+wrapped/target/
+
+# Node
+node_modules/
+web/dist/
+*.log
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+
+# Never commit real chat exports
+*.zip
+WhatsApp Chat*.txt
+_chat.txt
