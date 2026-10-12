@@ -13,3 +13,9 @@ web/dist/
 *.zip
 WhatsApp Chat*.txt
 _chat.txt
+
+# Secrets and local settings
+.env
+.env.*
+!.env.example
+.claude/
