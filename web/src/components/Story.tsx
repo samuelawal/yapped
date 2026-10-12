@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useStoryGestures } from '../hooks/useStoryGestures'
+import { track } from '../lib/analytics'
 import type { Stats } from '../lib/types'
 import { buildSlides } from '../slides/buildSlides'
 import { EASE_OUT } from '../lib/ease'
@@ -45,6 +46,13 @@ export function Story({ stats, onRestart }: Props) {
   }, [next, prev, onRestart])
 
   const slide = slides[index]
+
+  // Which slides people reach tells us where they drop off.
+  // Only the slide's id ("night", "emoji"...) is sent, never its content.
+  useEffect(() => {
+    track('slide_viewed', { slide: slide.id, position: index + 1, total: slides.length })
+    if (index === last) track('story_completed', {})
+  }, [slide.id, index, last, slides.length])
 
   return (
     <div

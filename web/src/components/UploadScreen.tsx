@@ -1,6 +1,7 @@
 import { motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import type { DragEvent } from 'react'
+import { track } from '../lib/analytics'
 import { analyzeText, loadAnalyzer, readChatFile } from '../lib/analyze'
 import { makeDemoChat } from '../lib/demoChat'
 import type { Stats } from '../lib/types'
@@ -18,24 +19,28 @@ export function UploadScreen({ onStats }: { onStats: (stats: Stats) => void }) {
     loadAnalyzer()
   }, [])
 
-  async function run(getText: () => Promise<string>) {
+  async function run(getText: () => Promise<string>, source: 'txt' | 'zip' | 'demo') {
     setBusy(true)
     setError(null)
     try {
       const stats = await analyzeText(await getText())
       if (stats.totalMessages === 0) {
         setError("We couldn't find any messages in that file. Is it a WhatsApp chat export?")
+        if (source !== 'demo') track('upload_failed', { source, reason: 'no_messages' })
       } else {
+        track('chat_analyzed', { source })
         onStats(stats)
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong reading that file.')
+      if (source !== 'demo') track('upload_failed', { source, reason: 'read_error' })
     } finally {
       setBusy(false)
     }
   }
 
-  const onFile = (file: File | undefined) => file && run(() => readChatFile(file))
+  const onFile = (file: File | undefined) =>
+    file && run(() => readChatFile(file), file.name.toLowerCase().endsWith('.zip') ? 'zip' : 'txt')
 
   const onDrop = (e: DragEvent) => {
     e.preventDefault()
@@ -99,7 +104,7 @@ export function UploadScreen({ onStats }: { onStats: (stats: Stats) => void }) {
           <span className="text-[6cqw] leading-none">🔒</span>
           <p className="text-[4cqw] leading-snug">
             <strong className="text-acid">Your chat never leaves your phone.</strong> Everything is counted right here in your browser.
-            Nothing is uploaded, ever.
+            Nothing from your chat is uploaded, ever. We only count anonymous visits and button taps.
           </p>
         </Reveal>
 
@@ -124,7 +129,7 @@ export function UploadScreen({ onStats }: { onStats: (stats: Stats) => void }) {
           <button
             type="button"
             disabled={busy}
-            onClick={() => run(async () => makeDemoChat())}
+            onClick={() => run(async () => makeDemoChat(), 'demo')}
             className="text-[4cqw] font-semibold underline decoration-violet decoration-2 underline-offset-4 hover:text-violet"
           >
             No chat handy? Try a demo

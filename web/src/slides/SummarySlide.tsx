@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Reveal } from '../components/motion'
 import { StoryCard, WideCard } from '../components/ShareCards'
+import { track } from '../lib/analytics'
 import { saveNodeAsImage } from '../lib/exportImage'
 import type { Stats } from '../lib/types'
 import { SlideLayout } from './SlideLayout'
@@ -27,8 +28,10 @@ export function SummarySlide({ stats, theme, onRestart }: Props) {
     try {
       // 360px × 3 = 1080×1920 (status); 800px × 2 = 1600×900 (X)
       await saveNodeAsImage(node, `yapped-${kind}.png`, kind === 'story' ? 3 : 2)
+      track('image_downloaded', { format: kind === 'story' ? 'status' : 'x' })
     } catch {
       setError("Couldn't make the image. Try again?")
+      track('image_failed', { format: kind === 'story' ? 'status' : 'x' })
     } finally {
       setSaving(null)
     }
